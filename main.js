@@ -59,9 +59,8 @@ clearAllBtn.onclick = function () {
 }
 
 function addTaskToArray(taskText) {
-    // الحصول على التاريخ والوقت الحالي بالتنسيق الإنجليزي
     let now = new Date();
-    let formattedDate = now.toLocaleString("en-US", {
+    let formattedDate = now.toLocaleString("EG-ar", { // استخدام اللغة العربية للتاريخ
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -72,7 +71,6 @@ function addTaskToArray(taskText) {
         hour12: true
     });
 
-    // إنشاء كائن المهمة
     const task = {
         id: Date.now(),
         title: taskText,
@@ -80,28 +78,26 @@ function addTaskToArray(taskText) {
         date: formattedDate
     };
 
-    // إضافة المهمة إلى المصفوفة
     arrayOfTasks.push(task);
-
-    // تحديث الصفحة و localStorage
     addElementToPageFrom(arrayOfTasks);
     addDataToLocalStorage(arrayOfTasks);
-    toggleClearAllButton(); // إظهار زر الحذف الكلي إذا كان هناك مهام
+    toggleClearAllButton();
 }
 
 function addElementToPageFrom(arrayOfTasks) {
     tasksDiv.innerHTML = ""; // تفريغ المهام القديمة حتى لا تتكرر
 
     arrayOfTasks.forEach(task => {
-        // إنشاء عنصر لعرض التاريخ
         let dateDiv = document.createElement("div");
         dateDiv.classList.add("task-date");
-        dateDiv.innerHTML = `<strong>${task.date}</strong>`; // إضافة التاريخ أعلى المهمة
+        dateDiv.innerHTML = `<strong>${task.date}</strong>`;
 
         let newDiv = document.createElement("div");
         newDiv.classList.add("task");
 
-        // إضافة كلاس "done" إذا كانت المهمة مكتملة
+        // ضبط اتجاه النص بناءً على اللغة
+        newDiv.style.direction = /[\u0600-\u06FF]/.test(task.title) ? "rtl" : "ltr"; 
+
         if (task.completed) {
             newDiv.classList.add("done");
         }
@@ -109,20 +105,17 @@ function addElementToPageFrom(arrayOfTasks) {
         newDiv.setAttribute("data-id", task.id);
         newDiv.innerHTML = task.title;
 
-        // إنشاء زر الحذف
         let span = document.createElement("span");
         span.classList.add("del");
         span.innerHTML = "Delete";
 
-        // إضافة زر الحذف داخل newDiv
         newDiv.appendChild(span);
 
-        // إضافة التاريخ ثم المهمة إلى الصفحة
         tasksDiv.appendChild(dateDiv);
         tasksDiv.appendChild(newDiv);
     });
 
-    toggleClearAllButton(); // تحديث زر الحذف الكلي
+    toggleClearAllButton();
 }
 
 // تخزين المهام في localStorage
@@ -152,7 +145,6 @@ function toggleStatusTaskWith(taskId) {
             arrayOfTasks[i].completed = !arrayOfTasks[i].completed;
         }
     }
-    // تحديث البيانات في localStorage
     addDataToLocalStorage(arrayOfTasks);
 }
 
@@ -164,3 +156,17 @@ function toggleClearAllButton() {
         clearAllBtn.style.display = "none";
     }
 }
+
+let micButton = document.querySelector(".mic-button");
+
+micButton.onclick = function () {
+    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "ar-EG"; // التعرف على العربية
+    recognition.start();
+
+    recognition.onresult = function (event) {
+        let speechText = event.results[0][0].transcript;
+        Input.value = speechText;
+    };
+};
+
